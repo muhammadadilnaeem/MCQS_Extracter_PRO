@@ -99,7 +99,7 @@ def extract_with_groq(image_bytes):
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 
     response = client.chat.completions.create(
-        model="llama-3.2-11b-vision-preview",
+        model="meta-llama/llama-4-scout-17b-16e-instruct"",
         messages=[
             {
                 "role": "user",
