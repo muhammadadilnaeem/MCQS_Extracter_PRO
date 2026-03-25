@@ -98,20 +98,21 @@ col1, col2 = st.columns(2)
 def extract_with_groq(image_bytes):
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 
+    user_prompt = (
+        "You are an expert at extracting text from images. "
+        "If the image contains MCQs, extract only the MCQs exactly as written, "
+        "preserving numbering, options, and formatting. "
+        "If there are no MCQs, extract all text in the image exactly as it appears. "
+        "Do not add commentary, summaries, or extra text. Return text only."
+    )
+
     response = client.chat.completions.create(
         model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[
             {
                 "role": "user",
                 "content": [
-                    {
-                        "type": "text",
-                        "text": (
-                            "You are an expert at extracting MCQs and text from images. "
-                            "Extract all questions exactly as written. "
-                            "Do not add answers. Maintain formatting."
-                        )
-                    },
+                    {"type": "text", "text": user_prompt},
                     {
                         "type": "image_url",
                         "image_url": {
@@ -120,8 +121,13 @@ def extract_with_groq(image_bytes):
                     }
                 ]
             }
-        ]
+        ],
+        temperature=0,
+        max_completion_tokens=2048,
+        top_p=1,
+        stream=False
     )
+
     return response.choices[0].message.content
 
 with col1:
@@ -166,6 +172,175 @@ st.markdown("""
 <p style="font-size:0.8rem;">💡 Tip: Clear, well-lit images give best results</p>
 </div>
 """, unsafe_allow_html=True)
+
+# import os
+# import base64
+# from PIL import Image
+# import streamlit as st
+# from dotenv import load_dotenv
+# from groq import Groq
+
+# # Load environment variables
+# load_dotenv()
+
+# # Initialize Groq client
+# client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+# # Streamlit page config
+# st.set_page_config(
+#     page_title="✨ MCQ Extractor Pro | AI-Powered Text Extraction",
+#     page_icon="📚",
+#     layout="wide",
+#     initial_sidebar_state="collapsed",
+# )
+
+# # Custom styling
+# st.markdown("""
+# <style>
+# .main, .stApp {
+#     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+# }
+# .stTitle {
+#     background: linear-gradient(120deg, #2c3e50, #3498db);
+#     padding: 1.5rem;
+#     border-radius: 15px;
+#     color: white;
+#     text-align: center;
+#     margin-bottom: 2rem;
+# }
+# .stHeader {
+#     background: linear-gradient(120deg, #3498db, #2980b9);
+#     padding: 1rem;
+#     border-radius: 12px;
+#     color: white;
+#     margin-bottom: 1.5rem;
+# }
+# .extractedContent {
+#     background: white;
+#     border-radius: 15px;
+#     padding: 25px;
+#     border: 3px solid #3498db;
+# }
+# div[data-testid="stButton"] button {
+#     width: 100%;
+#     min-height: 65px;
+#     background: linear-gradient(45deg, #2ecc71, #27ae60);
+#     color: white;
+#     font-size: 20px;
+#     font-weight: bold;
+#     border-radius: 12px;
+# }
+# .footer {
+#     background: linear-gradient(120deg, #2c3e50, #3498db);
+#     padding: 1.5rem;
+#     border-radius: 15px;
+#     color: white;
+#     text-align: center;
+#     margin-top: 2rem;
+# }
+# </style>
+# """, unsafe_allow_html=True)
+
+# # Header
+# st.markdown("""
+# <div class="stTitle">
+#     <h1>📚 MCQ Extractor Pro 🤖</h1>
+#     <p>Powered by Groq Vision AI</p>
+# </div>
+# """, unsafe_allow_html=True)
+
+# # Welcome message
+# st.markdown("""
+# <div style='background:white;padding:1.5rem;border-radius:15px;margin-bottom:2rem;'>
+# <h4>🎯 Upload an image to extract MCQs or text</h4>
+# <ul>
+# <li>🔍 Accurate MCQ extraction</li>
+# <li>📝 Preserves formatting</li>
+# <li>⚡ Ultra-fast Groq inference</li>
+# </ul>
+# </div>
+# """, unsafe_allow_html=True)
+
+# # Upload image
+# uploaded_file = st.file_uploader(
+#     "📤 Drop your image here",
+#     type=["jpg", "jpeg", "png", "jfif"],
+# )
+
+# # Columns
+# col1, col2 = st.columns(2)
+
+# def extract_with_groq(image_bytes):
+#     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+
+#     response = client.chat.completions.create(
+#         model="meta-llama/llama-4-scout-17b-16e-instruct",
+#         messages=[
+#             {
+#                 "role": "user",
+#                 "content": [
+#                     {
+#                         "type": "text",
+#                         "text": (
+#                             "You are an expert at extracting MCQs and text from images. "
+#                             "Extract all questions exactly as written. "
+#                             "Do not add answers. Maintain formatting."
+#                         )
+#                     },
+#                     {
+#                         "type": "image_url",
+#                         "image_url": {
+#                             "url": f"data:image/jpeg;base64,{image_base64}"
+#                         }
+#                     }
+#                 ]
+#             }
+#         ]
+#     )
+#     return response.choices[0].message.content
+
+# with col1:
+#     st.markdown('<div class="stHeader"><h3>📂 Uploaded Image</h3></div>', unsafe_allow_html=True)
+
+#     if uploaded_file:
+#         image = Image.open(uploaded_file)
+#         st.image(image, caption="📸 Preview", use_container_width=True)
+
+#     extract_button = st.button("🔍 Extract Content ⚡")
+
+# with col2:
+#     st.markdown('<div class="stHeader"><h3>📜 Extracted Content</h3></div>', unsafe_allow_html=True)
+
+#     if uploaded_file and extract_button:
+#         try:
+#             with st.spinner("🔄 Processing image..."):
+#                 result = extract_with_groq(uploaded_file.getvalue())
+
+#             st.balloons()
+
+#             st.markdown(
+#                 f'<div class="extractedContent"><pre>{result}</pre></div>',
+#                 unsafe_allow_html=True
+#             )
+
+#             st.download_button(
+#                 label="📋 Download Extracted Content",
+#                 data=result,
+#                 file_name="extracted_content.md",
+#                 mime="text/markdown"
+#             )
+
+#         except Exception as e:
+#             st.error(f"🚫 Error: {e}")
+
+# # Footer
+# st.markdown("""
+# <div class="footer">
+# <h4>🚀 MCQ Extractor Pro</h4>
+# <p>Built with Streamlit & Groq Vision AI</p>
+# <p style="font-size:0.8rem;">💡 Tip: Clear, well-lit images give best results</p>
+# </div>
+# """, unsafe_allow_html=True)
 
 
 
